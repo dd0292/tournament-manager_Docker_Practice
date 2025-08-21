@@ -63,7 +63,7 @@ services:
       #  ===== Added for Kafka ===== 
 
     volumes:
-      - ./tournament-manager-api:/app #Change Path
+      - ./tournament-manager-api:/app #Change NEW Path
       - /app/node_modules
     depends_on:
       - mongo
