@@ -4,7 +4,7 @@ services:
   # FROM "tournament-manager-api/docker-compose.yml"
   mongo:
     image: mongo:6.0 
-    container_name: tournament-designer-db
+    container_name: db
     restart: always
     ports:
       - "27017:27017"
@@ -18,7 +18,7 @@ services:
     build:
       context: ./tournament-manager-ui
       dockerfile: Dockerfile
-    container_name: angular_app
+    container_name: ui
     ports:
       - "80:80"
     networks:
@@ -32,6 +32,7 @@ services:
     image: bitnami/kafka:latest
     networks:
       - internal_net
+    container_name: kafka
     ports:
       - "9092:9092"
     environment:
@@ -42,13 +43,14 @@ services:
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9092
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
     volumes:
       - kafka_data:/bitnami/kafka
   
   # FROM "tournament-manager-api/docker-compose.yml"
   api:
     build: ./tournament-manager-api #Change Path
-    container_name: tournament-designer-api
+    container_name: api
     ports:
       - "3000:3000"
     networks:
@@ -74,6 +76,7 @@ services:
   # Chaty  
   job:
     build: ./job
+    container_name: job
     networks:
       - internal_net
     environment:

@@ -77,3 +77,23 @@ Ports.:
     The browser showed “This page isn’t working”.
 
 **SOLUTION:** Inside the API container, Docker is looking for ```/app/package.json``` but it doesn’t exist. Mount the correct folder in volumes; this partiality solves it????
+
+- (*) With the commands ```sudo docker logs -f [api|job|kafka]``` i get the following erros:
+
+1. [api]: 
+
+    Error conectando a Kafka: KafkaJSNonRetriableError Caused by: KafkaJSConnectionError: Connection error: getaddrinfo ENOTFOUND kafka at Socket.onError (/app/node_modules/kafkajs/src/network/connection.js:210:23)
+
+2. [job]:
+
+    KafkaJSNonRetriableError Caused by: KafkaJSConnectionError: Connection error: getaddrinfo ENOTFOUND kafka at Socket.onError (/app/node_modules/kafkajs/src/network/connection.js:210:23)
+
+3. [kafka]:
+
+    kafka 21:39:06.05 INFO  ==> NOTICE: Starting August 28th, 2025, only a limited subset of images/charts will remain available for free. Backup will be available for some time at the 'Bitnami Legacy' repository. More info at https://github.com/bitnami/containers/issues/83267
+    kafka 21:39:06.05 INFO  ==> 
+    kafka 21:39:06.05 INFO  ==> ** Starting Kafka setup **
+    kafka 21:39:08.75 ERROR ==> There are listeners bound to the same port
+    kafka 21:39:08.77 WARN  ==> Kafka has been configured with a PLAINTEXT listener, this setting is not recommended for production environments.
+
+**SOLUTION:** NONE

@@ -37,7 +37,7 @@ const Tournament = model("Tournament", tournamentSchema);
 // KafkaJS Man: https://kafka.js.org/docs/getting-started
 
 const kafka = new Kafka({
-  // clientId: 'my-app', [TODO: Check This Code] 
+  clientId: 'kafkajs', //[TODO: Check This Code] 
   brokers: [kafkaBroker] 
 });
 
