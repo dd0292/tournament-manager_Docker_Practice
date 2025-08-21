@@ -76,4 +76,4 @@ Ports.:
     Kafka (http://localhost:9092/):
     The browser showed “This page isn’t working”.
 
-**SOLUTION:** CRY 
+**SOLUTION:** Inside the API container, Docker is looking for ```/app/package.json``` but it doesn’t exist. Mount the correct folder in volumes; this partiality solves it????
