@@ -45,6 +45,7 @@ sudo usermod -a -G $HOME
     sudo docker image|container ls -a # List images
     sudo docker image|container rm <id>  # remove thing
     sudo docker image|container prune  # Clean PC
+    bash insert_data.sh # Inster Data; alter for Postman              
 ```
 
 Ports.:
@@ -78,6 +79,10 @@ Ports.:
 
 **SOLUTION:** Inside the API container, Docker is looking for ```/app/package.json``` but it doesn’t exist. Mount the correct folder in volumes; this partiality solves it????
 
+- (*) error TS2339: Property '_id' does not exist on type ... `insertMany()` devuelve un array, no un solo documento. Por eso TypeScript te dice que `.id` y `._id` no existen en el tipo que devuelve esa función.
+
+**SOLUTION:** usar uno, o iterar todos despues del  `insertMany()`  en `tournament-manager-api/src/index.ts`
+
 - (*) With the commands ```sudo docker logs -f [api|job|kafka]``` i get the following erros:
 
 1. [api]: 
@@ -96,4 +101,6 @@ Ports.:
     kafka 21:39:08.75 ERROR ==> There are listeners bound to the same port
     kafka 21:39:08.77 WARN  ==> Kafka has been configured with a PLAINTEXT listener, this setting is not recommended for production environments.
 
-**SOLUTION:** NONE
+**SOLUTION:** `inster_data.sh` (to see data; it was manually made so GOOD LUCK)
+
+- (*) Job & Kafka NOT WORKING.... "KafkaJSNonRetriableError: Failed to connect: broker at index 0 is invalid "undefined""

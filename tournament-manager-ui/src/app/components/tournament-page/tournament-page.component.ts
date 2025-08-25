@@ -2,7 +2,10 @@ import { AfterViewInit, Component, Input } from '@angular/core';
 import { BracketsManager } from 'brackets-manager';
 import { InMemoryDatabase } from 'brackets-memory-db';
 import dataset from '../../data';
+// import dataset, { katas } from '../../data';
+
 import { StageViewerComponent } from './stage-viewer/stage-viewer.component';
+import { TournamentService } from './tournament.service';
 
 function getNearestPowerOfTwo(input: number): number {
   return Math.pow(2, Math.ceil(Math.log2(input)));
@@ -19,10 +22,16 @@ export class TournamentPageComponent implements AfterViewInit {
   private db: InMemoryDatabase = new InMemoryDatabase();
   private manager: BracketsManager;
   public dataset: any = dataset.filter(x => x.roster.length > 1);
+  public emptyBrackets: any = dataset.filter(x => x.roster.length === 0);
+  public smallBrackets: any = dataset.filter(x => x.roster.length <= 4 && x.roster.length === 1);
+  public allDojos = new Set<string>(this.dataset.map((x: any) => x.roster.map((y: any) => this.getDojoName(y.name))).flat(Infinity));
+  // public katas = katas;
   @Input('tournamentId') public tournamentId: string = 'tournament-1';
   public loadedData: any[] = [];
 
-  public constructor() {
+  public constructor(
+    private readonly _tournamentService: TournamentService,
+  ) {
     this.db = new InMemoryDatabase();
     this.manager = new BracketsManager(this.db);
   }
@@ -48,9 +57,9 @@ export class TournamentPageComponent implements AfterViewInit {
         name: ds.title,
         tournamentId: this.tournamentId,
         type: ds.type,
-        seeding: ds.roster.map((player: any) => player.name),
+        seeding: ds.roster.map((player: any) => `${player.name} [${player.weight} kg]`),
         settings: {
-          seedOrdering: ['natural'],
+          seedOrdering: [ds.seedingOrdering ?? 'natural'],
           balanceByes: true,
           size: getNearestPowerOfTwo(ds.roster.length),
         },
@@ -73,13 +82,6 @@ export class TournamentPageComponent implements AfterViewInit {
 
     console.log('All stages data:', allData);
     return allData;
-
-    // return {
-    //   stages: data.stage,
-    //   matches: data.match,
-    //   matchGames: data.match_game,
-    //   participants: data.participant,
-    // };
   }
 
   async ngAfterViewInit(): Promise<void> {
@@ -95,7 +97,27 @@ export class TournamentPageComponent implements AfterViewInit {
         'consolation-final': 'Semi {{position}}',
       },
     });
-    this.loadedData = await this.loadBrackets(this.dataset);
+
+    this._tournamentService.loadBrackets().subscribe({
+      next: async (data: any[]) => {
+        console.log('Data loaded from service:', data);
+        this.loadedData = await this.loadBrackets(data.filter(x => x.roster.length > 1));
+      },
+      error: (error) => {
+        console.error('Error loading data:', error);
+      }
+    });
+    // this.loadedData = await this.loadBrackets(this.dataset);
+  }
+
+  public getDojoName(name: string): string {
+    try {
+      const dojoMatch = name.match(/\[(.*?)\]/);
+      return dojoMatch ? dojoMatch[1] : '';
+    } catch (error) {
+      console.error('Error extracting dojo name:', error);
+      return '';
+    }
   }
 
 

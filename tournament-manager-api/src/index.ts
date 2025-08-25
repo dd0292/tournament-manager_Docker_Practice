@@ -1,21 +1,41 @@
 import express from "express";
 import mongoose, { model, Schema } from "mongoose";
-import { Kafka } from "kafkajs";   // kafkajs library; see Dockerfile
+import ProducerFactory from "./kafka";
+import { iTournamentMessage, iPlayer } from "./iTournamentMessage"
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/tournament_designer";
 
-const kafkaBroker = process.env.KAFKA_BROKER || "kafka:9092";  // Defaults form the compose
+const kafkaBroker = process.env.KAFKA_BROKER || "localhost:9092";  // Defaults form the compose
 const kafkaTopic = process.env.KAFKA_TOPIC || "torneos";  // Defaults form the compose
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(function (req, res, next) {
+
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,Authorization');
+
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    // Pass to next layer of middleware
+    next();
+});
+
 
 mongoose
   .connect(MONGO_URI)
   .then(() => console.log("✅ Conectado a MongoDB"))
   .catch((err) => console.error("❌ Error conectando a MongoDB:", err));
-
 
 const tournamentSchema = new Schema(
   {
@@ -33,71 +53,73 @@ const tournamentSchema = new Schema(
 
 const Tournament = model("Tournament", tournamentSchema);
 
-// -------------------- Kafka Setup --------------------
+// ---------------------- Kafka Setup/Connection ----------------------
 // KafkaJS Man: https://kafka.js.org/docs/getting-started
 
-const kafka = new Kafka({
-  clientId: 'kafkajs', //[TODO: Check This Code] 
-  brokers: [kafkaBroker] 
-});
+const kafkaProducer = new ProducerFactory(kafkaTopic, kafkaBroker); 
 
-const producer = kafka.producer();
+(async () => {
+  await kafkaProducer.start();
 
-async function initKafka() {
+  app.listen(PORT, () => {
+    console.log(`Kafka's server running on port ${kafkaBroker}`);
+  });
+
+})();
+
+// ---------------------- Kafka Setup/Connection ----------------------
+
+// ========================= POST /upload-data =========================
+app.post("/upload-data", async (req, res) => {
   try {
-    await producer.connect();
-    console.log("Conectado a Kafka");
-  } catch (err) {
-    console.error("Error conectando a Kafka:", err);
-  }
-}
+    const data = req.body;
+    const created = await Tournament.insertMany(data);
 
-initKafka();
-// -------------------- Kafka Setup --------------------
+    if (!kafkaProducer.isConnected()) {
+      console.warn("⚠️ Kafka producer desconectado, reconectando...");
+      await kafkaProducer.start();
+    }
 
-// ================== POST /registrar ==================
-app.post("/registrar", async (req, res) => {
-  try {
-    const torneo = req.body;
+    // Interface to send Data
+    const tournamentMessages: iTournamentMessage[] = created.map(doc => ({
+      _id: doc._id.toString(),
+      title: doc.title,
+      type: doc.type,
+      roster: doc.roster.map((player: iPlayer) => ({
+        id: player.id,
+        name: player.name,
+        weight: player.weight,
+        age: player.age,
+      })),
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    }));
 
-    const created = await Tournament.create(torneo);
-
-    await producer.send({
-      topic: kafkaTopic,
-      messages: [
-        {
-          key: String(created._id), // Mongo id as key
-          value: JSON.stringify(created),  // tournament as JSON
-        },
-      ],
-    });
+    await kafkaProducer.sendBatch(tournamentMessages);
 
     res.status(201).json({
       ok: true,
-      id: created._id,
-      message: "Torneo registrado en Mongo y encolado en Kafka",
+      inserted: created.length,
+      ids: created.map(doc => doc._id),
+      message: "Torneos registrados en Mongo y encolados en Kafka",
     });
+
   } catch (err) {
-    console.error("Error en /registrar:", err);
-    
-    // Type guard to check if it's an Error
-    if (err instanceof Error) {
-      res.status(500).json({ ok: false, error: err.message });
-    } else {
-      res.status(500).json({ ok: false, error: "Unknown error occurred" });
-    }
+    console.error("Error en /upload-data:", err);
+    res.status(500).json({ ok: false, error: err instanceof Error ? err.message : "Unknown error" });
   }
 });
-// ================== POST /registrar ==================
 
-app.post('/upload-data', async (req, res) => {
-  const data = req.body;
-  // Here you would handle the data upload logic
-  console.log("Data received:", data);
+// ================== POST /upload-data ==================
 
-  await Tournament.insertMany(req.body);
-  res.status(201).json({ message: `Inserted ${req.body.length} tournaments!` });
-});
+// app.post('/upload-data', async (req, res) => {
+//   const data = req.body;
+//   // Here you would handle the data upload logic
+//   console.log("Data received:", data);
+
+//   await Tournament.insertMany(req.body);
+//   res.status(201).json({ message: `Inserted ${req.body.length} tournaments!` });
+// });
 
 app.get('/fetch-tournaments', async (req, res) => {
   const tournaments = await Tournament.find();

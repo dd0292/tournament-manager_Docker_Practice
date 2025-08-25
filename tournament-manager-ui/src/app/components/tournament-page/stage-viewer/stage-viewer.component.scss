@@ -6,7 +6,7 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 5px;
+  padding: 10px;
   padding-top: 10px;
   background: #ffffff;
   border-radius: 12px;
@@ -15,13 +15,40 @@
 }
 
 .brackets-viewer {
-    --match-width: 500px;
+  --match-width: 550px;
+}
+
+.match.connect-next.has-bye {
+  visibility: hidden;
 }
 
 .opponents {
-  min-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: var(--match-width);
 }
 
 #brackets {
   min-height: 400px;
+}
+
+.brackets-logo {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+.has-bye {
+  visibility: hidden;
+}
+
+.opponents.has-bye {
+  visibility: hidden;
+}
+
+.match.connect-next.has-bye::after {
+  visibility: hidden;
 }

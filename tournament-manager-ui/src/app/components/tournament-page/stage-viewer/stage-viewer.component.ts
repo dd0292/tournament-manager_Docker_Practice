@@ -32,7 +32,15 @@ export class StageViewerComponent implements AfterViewInit {
     });
     console.log('Brackets data loaded:', this.stageData);
     window.bracketsViewer.render(this.stageData, {
-      selector: `#${this.bracketsId}`,
+      selector: `#${this.bracketsId}`
+
+    });
+
+    document.querySelectorAll('.match.connect-next').forEach(match => {
+      if (match.querySelector('.bye')) {
+        match.classList.add('has-bye');
+        console.log(match)
+      }
     });
   }
 }
