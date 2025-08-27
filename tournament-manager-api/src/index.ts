@@ -56,6 +56,9 @@ const Tournament = model("Tournament", tournamentSchema);
 // ---------------------- Kafka Setup/Connection ----------------------
 // KafkaJS Man: https://kafka.js.org/docs/getting-started
 
+console.log('📦 KAFKA_TOPIC:', kafkaTopic);
+console.log('📡 KAFKA_BROKER:', kafkaBroker);
+
 const kafkaProducer = new ProducerFactory(kafkaTopic, kafkaBroker); 
 
 (async () => {

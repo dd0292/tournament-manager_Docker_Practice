@@ -4,7 +4,7 @@ const broker = process.env.KAFKA_BROKER || "kafka:9092";
 const topic  = process.env.KAFKA_TOPIC  || "torneos";
 
 const kafka = new Kafka({ brokers: [broker] });
-const consumer = kafka.consumer({ groupId: "tm-job" });
+const consumer = kafka.consumer({ groupId: "kafkajs" });
 
 (async () => {
   await consumer.connect();

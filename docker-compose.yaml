@@ -1,27 +1,6 @@
 #version: "3.9"
 
 services:
-  # FROM "tournament-manager-api/docker-compose.yml"
-  mongo:
-    image: mongo:6.0 
-    container_name: db
-    restart: always
-    ports:
-      - "27017:27017"
-    networks:
-      - internal_net
-  
-  # FROM "tournament-manager-ui/docker-compose.yml"
-  angular-app:
-    build:
-      context: ./tournament-manager-ui
-      dockerfile: Dockerfile
-    container_name: ui
-    ports:
-      - "80:80"
-    networks:
-      - internal_net
-    restart: unless-stopped
 
   # NEW 
   # Kafka configuration docs: https://docs.confluent.io/platform/current/installation/docker/config-reference.html
@@ -39,39 +18,14 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
 
       - KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
 
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_BROKER=kafka:9092
       - KAFKAJS_NO_PARTITIONER_WARNING=1
-  
-  # FROM "tournament-manager-api/docker-compose.yml"
-  api:
-    build: ./tournament-manager-api #Change Path
-    container_name: api
-    ports:
-      - "3000:3000"
-    networks:
-      - internal_net
-    environment:
-      - PORT=3000
-      - MONGO_URI=mongodb://mongo:27017/tournament_designer
-
-      #  ===== Added for Kafka ===== 
-      - KAFKA_BROKER=kafka:9092         
-      - KAFKA_TOPIC=torneos
-      #  ===== Added for Kafka ===== 
-
-    volumes:
-      - ./tournament-manager-api:/app #Change NEW Path
-      - /app/node_modules
-    depends_on:
-      - mongo
-      - kafka
-    command: npm run dev
-
+      
   # NEW
   # Chaty  
   job:
@@ -84,7 +38,52 @@ services:
       - KAFKA_TOPIC=torneos
     depends_on: 
       - kafka
+    restart: always
 
+  # FROM "tournament-manager-api/docker-compose.yml"
+  mongo:
+    image: mongo:6.0 
+    container_name: db
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - internal_net
+
+  # FROM "tournament-manager-api/docker-compose.yml"
+  api:
+    build: ./tournament-manager-api #Change Path
+    container_name: api
+    ports:
+      - "3000:3000"
+    networks:
+      - internal_net
+    environment:
+      - PORT=3000
+      - MONGO_URI=mongodb://mongo:27017/tournament_designer
+      #  ===== Added for Kafka ===== 
+      - KAFKA_BROKER=kafka:9092         
+      - KAFKA_TOPIC=torneos
+      #  ===== Added for Kafka ===== 
+    volumes:
+      - ./tournament-manager-api:/app #Change NEW Path
+      - /app/node_modules
+    depends_on:
+      - mongo
+      - kafka
+    command: npm run dev
+
+  # FROM "tournament-manager-ui/docker-compose.yml"
+  angular-app:
+    build:
+      context: ./tournament-manager-ui
+      dockerfile: Dockerfile
+    container_name: angular_app
+    ports:
+      - "80:80"
+    networks:
+      - internal_net
+    restart: unless-stopped
 
 networks:
   internal_net:

@@ -9,15 +9,15 @@ export default class ProducerFactory {
   private connected: boolean = false; 
 
   constructor(kafkaTopic: string, kafkaBroker: string) {
-    this.producer = this.createProducer();
     this.topic = kafkaTopic;
     this.broker = kafkaBroker;
+    this.producer = this.createProducer();
   }
 
   public async start(): Promise<void> {
     try {
       await this.producer.connect();
-      console.log('✅ Kafka Producer conectado ${this.kafkaBroker}');
+      console.log('✅✅✅ Kafka Producer conectado ✅✅✅');
       this.connected = true; // connected is TRUE
     } catch (error) {
       console.error("❌ Error conectando el Kafka Producer:", error);
