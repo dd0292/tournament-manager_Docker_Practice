@@ -2,6 +2,12 @@
 
 **Original repo:** [https://github.com/cognian/tournament-manager](https://github.com/cognian/tournament-manager)  
 
+## Integrantes 
+- Sergio Andrés Zúñiga Castillo
+- José David Chaves Mena
+- José Ignacio Madriz Ortiz
+- Rachell Daniela Leiva Abarca 
+
 ## Testing Commands
 ## 
 ### Linux
