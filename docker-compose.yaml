@@ -6,7 +6,8 @@ services:
   # Kafka configuration docs: https://docs.confluent.io/platform/current/installation/docker/config-reference.html
   # Kafka configuration ref: https://developer.confluent.io/confluent-tutorials/kafka-on-docker/ https://hub.docker.com/r/bitnami/kafka
   kafka:
-    image: bitnami/kafka:latest
+    image: bashj79/kafka-kraft
+
     networks:
       - internal_net
     container_name: kafka

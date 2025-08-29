@@ -2,56 +2,36 @@
 
 **Original repo:** [https://github.com/cognian/tournament-manager](https://github.com/cognian/tournament-manager)  
 
-## TODO
-
-- [ ] Run API + UI together  
-- [ ] Add MongoDB + Kafka  
-- [ ] Check MongoDB  
-- [ ] Make POST write → MongoDB → Kafka  
-- [ ] Add a new Job container (Node) that consumes from Kafka and prints  
-
----
-
-## Installing Docker (Linux)
-
-Follow this guide: [Install Docker on Arch Linux](https://itsfoss.com/install-docker-arch-linux/)  
-
-```bash
-sudo pacman -Sy docker docker-compose docker-buldx
-sudo systemctl status docker
-sudo systemctl status docker
-sudo usermod -a -G $HOME
-```
-
-**NOTE**: Final step is NOT necesary
-
-## Writing the compose file & New things
-
-1. Creat a new docker-compose.yaml at repo root 
-2. Add info for kafka's container
-4. Creat a new directory for the job (Node) ./job
-5. Add info for jobs's container
-6. Creat the index, package & Dockerfile
-7. Add the new /POST along with the other things
-
-## Testing Commands & Important info
-
+## Testing Commands
+## 
+### Linux
 ```bash
     sudo docker compose build # builds API, UI, Job images
     sudo docker compose up -d # starts all 5 containers in background
     sudo docker ps # Check they’re running
-    sudo docker exec -it <mongo_container_id> mongosh <AQUI VA ALGO MAS CREO; PERO NO ACORDARME> # Check Mongo
+    sudo docker exec -it <mongo_container_id> mongosh # Check Mongo
     sudo docker logs -f <job_container_id> # Check Logs (Node)
     sudo docker image|container ls -a # List images
     sudo docker image|container rm <id>  # remove thing
     sudo docker image|container prune  # Clean PC
     bash insert_data.sh # Inster Data; alter for Postman              
 ```
+### Windows
+/tournament-manager_Docker_Practice> 
+    docker compose up --build
+    docker compose ps
+    docker exec -it <mongo_container_id> mongosh
+    docker logs -f <job_container_id>|kafka
+Se sube el JSON desde Postman, no con bash, se pueden comprobar con el log de kafka
+
 
 Ports.:
 - 1. UI: http://localhost:80/
 - 2. API: http://localhost:27017/
 - 3. Kafka: http://localhost:9092/
+
+
+
 
 ## Errors
 
